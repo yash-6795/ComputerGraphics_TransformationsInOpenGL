@@ -3,11 +3,17 @@
 #include <iostream>
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
+#include<glm\gtx\transform.hpp>
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
+float xr, yu = 0.0;
+float xScale, yScale = 0.0f;
+float xAngle, yAngle, zAngle= 0.0f;
+glm::mat4 myTransformMatrix, myScaledMatrix, myRotationMatrix = glm::mat4();
+glm::mat4 transformmedMatrix;
 
 // Vertex Shader (for convenience, it is defined in the main here, but we will be using text files for shaders in future)
 // Note: Input to this shader is the vertex positions that we specified for the triangle. 
@@ -174,47 +180,127 @@ void init()
 	GLuint shaderProgramID = CompileShaders();
 	//get the handle for uniform variable which is mat4 for trasformation
 	MatrixID = glGetUniformLocation(shaderProgramID, "MVP");
-	glm::mat4 mvp = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+	transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 	// Put the vertices and colors into a vertex buffer object
 	generateObjectBuffer(vertices, colors);
 	// Link the current buffer to the shader
 	linkCurrentBuffertoShader(shaderProgramID);
 }
-float xr,yu = 0;
+
 void keyPressed(unsigned char key, int x, int y) {
-	if (key == 'd') {
+	key = (int)key;
+	if ( key == 100) {//d
 		xr += .1;
-		glm::mat4 mvp = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+		 myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+		 transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
-	else if(key=='a')
+	else if(key==97)//a
 	{
 			xr -= .1;
-			glm::mat4 mvp = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+			myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 	
 	}
-	else if (key == 'w')
+	else if (key == 119)//w
 	{
 		
 			yu += .1;
-			glm::mat4 mvp = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 		
 	}
-	else if (key == 's')
+	else if (key == 115)//s
 	{
 		
 			yu -= .1;
-			glm::mat4 mvp = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 		
 	}
+	else if(key==104)//h scalling
+	{		xScale += .5f;
+		myScaledMatrix = glm::scale(xScale,yScale,1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 102)//f scaling
+	{
+		xScale -= .5f;
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 116)//t scalling
+	{
+		yScale += .5f;
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 103)//g scalling
+	{
+		yScale -= .5f;
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 120) {//rotate around x on x press
+		xAngle +=2.0f;
+		myRotationMatrix=glm::rotate(xAngle, glm::vec3(1, 0, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 99) {//ani rotate around x on c press
+		xAngle -= 2.0f;
+		myRotationMatrix = glm::rotate(xAngle, glm::vec3(1, 0, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 122) {//rotate around z on z press
+		zAngle += 2.0f;
+		myRotationMatrix = glm::rotate(zAngle, glm::vec3(0, 0, 1));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 92) {//rotate anti around z on \ press
+		zAngle -= 2.0f;
+		myRotationMatrix = glm::rotate(zAngle, glm::vec3(0, 0, 1));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 121) {//rotate around y on y press
+		yAngle += 2.0f;
+		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	else if (key == 117) {//rotate anti around y on u press
+		yAngle -= 2.0f;
+		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+	}
+	
+
 
 }
 
