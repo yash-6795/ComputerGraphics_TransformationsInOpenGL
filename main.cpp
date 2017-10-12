@@ -188,86 +188,128 @@ void init()
 	// Link the current buffer to the shader
 	linkCurrentBuffertoShader(shaderProgramID);
 }
-void moveBack(void) {
-	xr, yu = 0.0;
-	xScale, yScale = 1.0f;
-	xAngle, yAngle, zAngle = 0.0f;
-	glm::mat4 myTransformMatrix, myScaledMatrix, myRotationMatrix = glm::mat4();
+int n = 0;
+void moveBack() {
+	xr = 0.0f; yu = 0.0f;
+	n = 0;
+	xScale = 0.0f; yScale = 1.0f;
+	xAngle = 0.0f; yAngle = 0.0f; zAngle = 0.0f;
+	myTransformMatrix= glm::mat4(); myScaledMatrix= glm::mat4(); myRotationMatrix = glm::mat4();
 	transformmedMatrix = glm::mat4();
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 	glutPostRedisplay();
 }
 
-void scaleY(void) {
-	while (yScale != 3.0f) {
-		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
-		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
-		glutPostRedisplay();
-		
+void scaleY(int n) {
+	if (n<3) {
 		yScale += 1.0f;
-	}
-	
-	moveBack();
-}
-void scaleX(void) {
-	while (xScale != 3.0f) {
 		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
-		
-		xScale += 1.0f;
+		n++;
+		glutTimerFunc(500, scaleY, n);
 	}
-	moveBack();
+	else
+	{
+		moveBack();
+	}
+	
 	
 }
-void rotateY() {
-	while (yAngle != 90.0f) {
+void scaleX(int n) {
+	if(n<3) {
+		xScale += 1.0f;
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		n++;
+		glutTimerFunc(500, scaleX, n);
+
+	}
+	else
+	{
+		moveBack();
+		glutTimerFunc(500, scaleY, 0);
+	}
+	
+	
+}
+void rotateY(int n) {
+	if (n<5) {
+		yAngle += 14.0f;
 		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
-		yAngle += 10.0f;
+		n++;
+		glutTimerFunc(500, rotateY, n);
 	}
-	moveBack();
+	else {
+		moveBack();
+		glutTimerFunc(500, scaleX, 0);
+	}
+
 }
-void rotateX(void) {
-	while (xAngle != 90.0f) {
+void rotateX(int n) {
+	if(n<5) {
+		xAngle += 14.0f;
 		myRotationMatrix = glm::rotate(xAngle, glm::vec3(1, 0, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
-		xAngle += 10.0f;
+		n++;
+		glutTimerFunc(500, rotateX, n);
 	}
-	moveBack();
-}
-void moveLeft(void) {
-	while (xr != -.5f) {
-		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
-		glutPostRedisplay();
-		xr=xr-.1f;
-	}
-	Sleep(500);
-	moveBack();
-}
-void moveRight(void) {
-	while (xr != .5f) {
-		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
-		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
-		glutPostRedisplay();
-		xr=xr+.1f;
+	else
+	{
+		moveBack();
+		glutTimerFunc(500, rotateY, 0);
 	}
 	
-
+}
+void moveLeft(int n) {
+	if (n < 5) {
+		xr = xr - .1f;
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		n++;
+		glutTimerFunc(500, moveLeft, n);
+	}
+	else
+	{
+		moveBack();
+		glutTimerFunc(500, rotateX, 0);
+	}
+}
+void moveRight(int n) {
+	if (n < 5) {
+		xr = xr + .1f;
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		n++;
+		glutTimerFunc(500, moveRight, n);
+		}
+	else {
+		moveBack();
+		glutTimerFunc(500, moveLeft, 0);
+	}
+	
 }
 void runTransform(void) {
 	
-	moveRight();
-	//moveLeft();
+	glutTimerFunc(500, moveRight, n);
+	//glutTimerFunc(500, moveLeft, n);
+	//glutTimerFunc(500, rotateX, n);
+	//glutTimerFunc(500, rotateY, n);
+	//glutTimerFunc(500, scaleX, n);
+	//glutTimerFunc(500, scaleY, n);
+
 	//rotateX();
 	//rotateY();
 	//scaleX();
