@@ -4,13 +4,14 @@
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm\gtx\transform.hpp>
-
+#include <chrono>
+#include <thread>
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
 float xr, yu = 0.0;
-float xScale, yScale = 0.0f;
+float xScale, yScale = 1.0f;
 float xAngle, yAngle, zAngle= 0.0f;
 glm::mat4 myTransformMatrix, myScaledMatrix, myRotationMatrix = glm::mat4();
 glm::mat4 transformmedMatrix;
@@ -187,11 +188,95 @@ void init()
 	// Link the current buffer to the shader
 	linkCurrentBuffertoShader(shaderProgramID);
 }
+void moveBack(void) {
+	xr, yu = 0.0;
+	xScale, yScale = 1.0f;
+	xAngle, yAngle, zAngle = 0.0f;
+	glm::mat4 myTransformMatrix, myScaledMatrix, myRotationMatrix = glm::mat4();
+	transformmedMatrix = glm::mat4();
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+	glutPostRedisplay();
+}
 
+void scaleY(void) {
+	while (yScale != 3.0f) {
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		
+		yScale += 1.0f;
+	}
+	
+	moveBack();
+}
+void scaleX(void) {
+	while (xScale != 3.0f) {
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		
+		xScale += 1.0f;
+	}
+	moveBack();
+	
+}
+void rotateY() {
+	while (yAngle != 90.0f) {
+		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		yAngle += 10.0f;
+	}
+	moveBack();
+}
+void rotateX(void) {
+	while (xAngle != 90.0f) {
+		myRotationMatrix = glm::rotate(xAngle, glm::vec3(1, 0, 0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		xAngle += 10.0f;
+	}
+	moveBack();
+}
+void moveLeft(void) {
+	while (xr != -.5f) {
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		xr=xr-.1f;
+	}
+	Sleep(500);
+	moveBack();
+}
+void moveRight(void) {
+	while (xr != .5f) {
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glutPostRedisplay();
+		xr=xr+.1f;
+	}
+	
+
+}
+void runTransform(void) {
+	
+	moveRight();
+	//moveLeft();
+	//rotateX();
+	//rotateY();
+	//scaleX();
+	//scaleY();
+}
 void keyPressed(unsigned char key, int x, int y) {
 	key = (int)key;
 	if ( key == 100) {//d
-		xr += .1;
+		xr += 0.1f;
 		 myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 		 transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
@@ -199,7 +284,7 @@ void keyPressed(unsigned char key, int x, int y) {
 	}
 	else if(key==97)//a
 	{
-			xr -= .1;
+			xr -= 0.1f;
 			myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
@@ -209,7 +294,7 @@ void keyPressed(unsigned char key, int x, int y) {
 	else if (key == 119)//w
 	{
 		
-			yu += .1;
+			yu += 0.1f;
 			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
@@ -219,7 +304,7 @@ void keyPressed(unsigned char key, int x, int y) {
 	else if (key == 115)//s
 	{
 		
-			yu -= .1;
+			yu -= 0.1f;
 			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
@@ -299,10 +384,22 @@ void keyPressed(unsigned char key, int x, int y) {
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
+	else if (key == 108) {//on l press full graphic transform
+		 xr, yu = 0.0f;
+		 xScale, yScale = 1.0f;
+		 xAngle, yAngle, zAngle = 0.0f;
+		 transformmedMatrix = glm::mat4();
+		 glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		 glutPostRedisplay();
+		 runTransform();
+
+	}
 	
 
 
 }
+
+
 
 int main(int argc, char** argv) {
 
