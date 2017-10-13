@@ -24,28 +24,27 @@ glm::mat4 transformmedMatrix;
 static const char* pVS = "                                                    \n\
 #version 330                                                                  \n\
                                                                               \n\
-layout(location = 0) in vec3 vPosition;															  \n\
+layout(location = 0) in vec3 vPosition;	\n\
 uniform mat4 MVP;														  \n\
 in vec4 vColor;																  \n\
 out vec4 color;																 \n\
                                                                               \n\
                                                                                \n\
 void main()                                                                     \n\
-{                                                                                \n\
-    gl_Position = MVP*vec4(vPosition.x, vPosition.y, vPosition.z, 2.0);  \n\
-	color = vColor;							\n\
+{       gl_Position = MVP*vec4(vPosition.x, vPosition.y, vPosition.z, 2.0);  \n\
+	color = vColor;						\n\
 }";
 
 // Fragment Shader
 // Note: no input in this shader, it just outputs the colour of all fragments, in this case set to red (format: R, G, B, A).
 static const char* pFS = "                                              \n\
 #version 330                                                            \n\
-                                                                        \n\
+  in vec4 color;                                                                      \n\
 out vec4 FragColor;                                                      \n\
                                                                           \n\
 void main()                                                               \n\
 {                                                                          \n\
-FragColor = vec4(1.0, 0.0, 0.0, 2.0);									 \n\
+FragColor = color;									 \n\
 }";
 
 
@@ -124,7 +123,7 @@ GLuint CompileShaders()
 // VBO Functions - click on + to expand
 #pragma region VBO_FUNCTIONS
 GLuint generateObjectBuffer(GLfloat vertices[], GLfloat colors[]) {
-	GLuint numVertices = 3;
+	GLuint numVertices = 6;
 	// Genderate 1 generic buffer object, called VBO
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
@@ -140,7 +139,7 @@ GLuint generateObjectBuffer(GLfloat vertices[], GLfloat colors[]) {
 }
 
 void linkCurrentBuffertoShader(GLuint shaderProgramID) {
-	GLuint numVertices = 3;
+	GLuint numVertices = 6;
 	// find the location of the variables that we will be using in the shader program
 	GLuint positionID = glGetAttribLocation(shaderProgramID, "vPosition");
 	GLuint colorID = glGetAttribLocation(shaderProgramID, "vColor");
@@ -159,21 +158,28 @@ void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glutSwapBuffers();
 }
 GLuint MatrixID;
+GLuint MatrixID2;
 
 void init()
 {
 	// Create 3 vertices that make up a triangle that fits on the viewport 
 	GLfloat vertices[] = { -1.0f, -1.0f, 0.0f,
 		1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f };
+		0.0f, 1.0f, 0.0f ,
+		-1.5f, -1.0f, 0.0f,
+		.5f, -1.0f, 0.0f,
+		-.5f, 1.0f, 0.0f };
 	// Create a color array that identfies the colors of each vertex (format R, G, B, A)
 	GLfloat colors[] = { 0.0f, 1.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f };
+		0.0f, 0.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 1.0f, };
 
 
 
@@ -183,6 +189,8 @@ void init()
 	MatrixID = glGetUniformLocation(shaderProgramID, "MVP");
 	transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+
+	
 	// Put the vertices and colors into a vertex buffer object
 	generateObjectBuffer(vertices, colors);
 	// Link the current buffer to the shader
@@ -435,6 +443,19 @@ void keyPressed(unsigned char key, int x, int y) {
 		 glutPostRedisplay();
 		 runTransform();
 
+	}
+	else if (key = 109) {
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,0.0f, 0.0f));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 1.0f, 0.0f));
+		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		glDrawArrays(GL_TRIANGLES, 3, 3);
+		glutSwapBuffers();
 	}
 	
 
