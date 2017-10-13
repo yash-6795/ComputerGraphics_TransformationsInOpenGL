@@ -11,9 +11,12 @@
 
 using namespace std;
 float xr, yu = 0.0;
+float xr2, yu2 = 0.0;
 float xScale, yScale = 1.0f;
 float xAngle, yAngle, zAngle= 0.0f;
 glm::mat4 myTransformMatrix, myScaledMatrix, myRotationMatrix = glm::mat4();
+glm::mat4 myTransformMatrix2, myScaledMatrix2, myRotationMatrix2 = glm::mat4();
+glm::mat4 transformmedMatrix2;
 glm::mat4 transformmedMatrix;
 
 // Vertex Shader (for convenience, it is defined in the main here, but we will be using text files for shaders in future)
@@ -153,16 +156,18 @@ void linkCurrentBuffertoShader(GLuint shaderProgramID) {
 }
 #pragma endregion VBO_FUNCTIONS
 
-
+GLuint MatrixID;
 void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix2[0][0]);
+	glDrawArrays(GL_TRIANGLES, 3, 3);
 	glutSwapBuffers();
 }
-GLuint MatrixID;
-GLuint MatrixID2;
+
 
 void init()
 {
@@ -188,6 +193,7 @@ void init()
 	//get the handle for uniform variable which is mat4 for trasformation
 	MatrixID = glGetUniformLocation(shaderProgramID, "MVP");
 	transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
+	transformmedMatrix2 = myRotationMatrix2*myTransformMatrix2*myScaledMatrix2;
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 
 	
@@ -200,7 +206,7 @@ int n = 0;
 void moveBack() {
 	xr = 0.0f; yu = 0.0f;
 	n = 0;
-	xScale = 0.0f; yScale = 1.0f;
+	xScale = 1.0f; yScale = 1.0f;
 	xAngle = 0.0f; yAngle = 0.0f; zAngle = 0.0f;
 	myTransformMatrix= glm::mat4(); myScaledMatrix= glm::mat4(); myRotationMatrix = glm::mat4();
 	transformmedMatrix = glm::mat4();
@@ -329,7 +335,7 @@ void keyPressed(unsigned char key, int x, int y) {
 		xr += 0.1f;
 		 myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 		 transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
+		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if(key==97)//a
@@ -337,7 +343,6 @@ void keyPressed(unsigned char key, int x, int y) {
 			xr -= 0.1f;
 			myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 	
 	}
@@ -347,7 +352,6 @@ void keyPressed(unsigned char key, int x, int y) {
 			yu += 0.1f;
 			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 		
 	}
@@ -357,7 +361,6 @@ void keyPressed(unsigned char key, int x, int y) {
 			yu -= 0.1f;
 			glm::mat4  myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr, yu, 0.0));
 			transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 			glutPostRedisplay();
 		
 	}
@@ -365,7 +368,6 @@ void keyPressed(unsigned char key, int x, int y) {
 	{		xScale += .5f;
 		myScaledMatrix = glm::scale(xScale,yScale,1.0f);
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 102)//f scaling
@@ -373,7 +375,6 @@ void keyPressed(unsigned char key, int x, int y) {
 		xScale -= .5f;
 		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 116)//t scalling
@@ -381,7 +382,6 @@ void keyPressed(unsigned char key, int x, int y) {
 		yScale += .5f;
 		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 103)//g scalling
@@ -389,49 +389,42 @@ void keyPressed(unsigned char key, int x, int y) {
 		yScale -= .5f;
 		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 120) {//rotate around x on x press
 		xAngle +=2.0f;
 		myRotationMatrix=glm::rotate(xAngle, glm::vec3(1, 0, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 99) {//ani rotate around x on c press
 		xAngle -= 2.0f;
 		myRotationMatrix = glm::rotate(xAngle, glm::vec3(1, 0, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 122) {//rotate around z on z press
 		zAngle += 2.0f;
 		myRotationMatrix = glm::rotate(zAngle, glm::vec3(0, 0, 1));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 92) {//rotate anti around z on \ press
 		zAngle -= 2.0f;
 		myRotationMatrix = glm::rotate(zAngle, glm::vec3(0, 0, 1));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 121) {//rotate around y on y press
 		yAngle += 2.0f;
 		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 117) {//rotate anti around y on u press
 		yAngle -= 2.0f;
 		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
 		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		glutPostRedisplay();
 	}
 	else if (key == 108) {//on l press full graphic transform
@@ -439,23 +432,23 @@ void keyPressed(unsigned char key, int x, int y) {
 		 xScale, yScale = 1.0f;
 		 xAngle, yAngle, zAngle = 0.0f;
 		 transformmedMatrix = glm::mat4();
-		 glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
 		 glutPostRedisplay();
 		 runTransform();
 
 	}
-	else if (key = 109) {
-		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f,0.0f, 0.0f));
-		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		// NB: Make the call to draw the geometry in the currently activated vertex buffer. This is where the GPU starts to work!
-		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 1.0f, 0.0f));
-		transformmedMatrix = myRotationMatrix*myTransformMatrix*myScaledMatrix;
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &transformmedMatrix[0][0]);
-		glDrawArrays(GL_TRIANGLES, 3, 3);
-		glutSwapBuffers();
+	else if (key == 109) {//m press for traingle 2 tranform
+		xr2 += .1f;
+		myTransformMatrix2 = glm::translate(glm::mat4(), glm::vec3(xr2,yu2,0.0f));
+		transformmedMatrix2 = myRotationMatrix2*myTransformMatrix2*myScaledMatrix2;
+		glutPostRedisplay();
+	
+	}
+	else if (key == 110) {//n press for traingle 2 tranform
+		xr2 -= .1f;
+		myTransformMatrix2 = glm::translate(glm::mat4(), glm::vec3(xr2, yu2, 0.0f));
+		transformmedMatrix2 = myRotationMatrix2*myTransformMatrix2*myScaledMatrix2;
+		glutPostRedisplay();
+
 	}
 	
 
