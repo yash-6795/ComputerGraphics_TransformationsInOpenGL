@@ -450,6 +450,17 @@ void keyPressed(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 
 	}
+	else if (key == 111) {//o for combined transformation(move right, scale x and roate aroud y)
+		xr = xr + .5f;
+		xScale = 1.5f;
+		yAngle= 10.0f;
+		myTransformMatrix = glm::translate(glm::mat4(), glm::vec3(xr,yu, 0.0f));
+		myRotationMatrix = glm::rotate(yAngle, glm::vec3(0, 1, 0));
+		myScaledMatrix = glm::scale(xScale, yScale, 1.0f);
+		transformmedMatrix = myTransformMatrix*myRotationMatrix*myScaledMatrix;
+		glutPostRedisplay();
+
+	}
 	
 
 
